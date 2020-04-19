@@ -1,0 +1,134 @@
+Section CODE:
+	00010000 _BEG_CODE
+	000102c5 ~~ATA_disk_initialize
+	0001031d ~~ATA_disk_status
+	00010350 ~~ATA_disk_read
+	00010437 ~~ATA_disk_write
+	0001050e ~~ATA_disk_ioctl
+	000106c8 ~~disk_status
+	0001070e ~~disk_initialize
+	00010753 ~~disk_read
+	00010798 ~~disk_write
+	000107dc ~~disk_ioctl
+	000133a5 ~~f_mount
+	00013464 ~~f_open
+	000138e5 ~~f_read
+	00013d01 ~~f_write
+	0001420c ~~f_sync
+	000143a4 ~~f_close
+	000143f8 ~~f_lseek
+	000148d1 ~~f_opendir
+	000149d0 ~~f_closedir
+	00014a13 ~~f_readdir
+	00014aaa ~~f_stat
+	00014b31 ~~f_getfree
+	00014d75 ~~f_truncate
+	00014f56 ~~f_unlink
+	000150c7 ~~f_mkdir
+	0001533f ~~f_rename
+	00015582 ~~f_getlabel
+	000156fe ~~f_setlabel
+	00015e63 ~~f_mkfs
+	00016ece ~~f_fdisk
+	00016f42 ~~IRQHandler
+	0001703e ~~COPHandler
+	0001704e ~~BRKHandler
+	0001705e ~~main
+	000172cc ~~_abort
+	000172dc ~~close
+	000172f9 ~~creat
+	00017316 ~~lseek
+	00017337 ~~open
+	00017354 ~~read
+	00017371 ~~unlink
+	0001738e ~~write
+	00017483 ~~isatty
+	000174af ~~x
+	000174cd ~~clearTextScreen
+	00017535 ~~putTextXY
+	000175ee ~~setEGATextPalette
+	000177be ~~enableTextLayer
+	000177dc ~~setBorder
+	00017872 ~~printf
+	000178ba ~~_format
+	00018196 ~~_ldtoa
+	000185d6 dadc
+	000185cc ~~~dadc
+	00018743 ~~~dcmp
+	000187f3 ~~~ddiv
+	00018944 ~~~dfix
+	000189d0 ~~~dflt
+	00018a33 ~~~dmul
+	00018b58 ~~~dneg
+	00018b84 ~~~dsbc
+	00018b99 doNorm
+	00018c79 ~~_flsbuf
+	00018f23 ~~_getbuf
+	00018fec ~~malloc
+	000190c9 ~~memset
+	000190f5 ~~sbrk
+	00019143 ~~strlen
+	00019161 ~~tolower
+	0001917c ~~~asl
+	00019184 ~~~asr
+	00019195 ~~~div
+	000191b9 ~~~fmov
+	000191da ~~~lasl
+	00019209 ~~~lasr
+	00019247 ~~~llsr
+	00019277 ~~~lmul
+	000192c3 ~~~lsr
+	000192cb ~~~ludv
+	000192e5 ~~~lumd
+	000192fa ~~~mod
+	0001931e ~~~mul
+	0001935f ~~~swt
+	00019380 ~~~udv
+	000193b4 ~~~umd
+	000193ba ~~_closeall
+	000193fa ~~fclose
+	000194fd ~~fflush
+	0001957a ~~free
+	00019643 ~~strcpy
+	00019668 ~~~comdiv
+	000196a9 _END_CODE
+
+Section DATA:
+	00020000 _BEG_DATA
+	00020000 ~~spinnerState1
+	00020001 ~~spinnerState2
+	0002000e ~~VolToPart
+	00020127 ~~heap_start
+	0002012b ~~heap_end
+	0002012f ~~spinner
+	00020137 ~~spinnerState
+	00020138 ~~spinnerStateDisk
+	000202dc FltErr
+	000202de ~~_ctype
+	000203df ~~_iob
+	00020573 _END_DATA
+
+Section UDATA:
+	00020573 _BEG_UDATA
+	00020579 ~~bw
+	0002057b ~~res
+	0002057d ~~fil
+	000207a3 ~~fs
+	000209d2 ~~buff
+	000213d2 ~~_heap_top
+	000213d6 ~~_close_stdio
+	000213da ~~_mem_start
+	000213de _END_UDATA
+
+Section startup:
+	00007d00 _BEG_STARTUP
+	00007d87 _END_STARTUP
+
+Section vectors:
+	0000ffe4 _BEG_VECTORS
+	00010000 _END_VECTORS
+
+ABSOLUTES:
+	00007d3c ~~_exit
+	00007d3e IRQ
+
