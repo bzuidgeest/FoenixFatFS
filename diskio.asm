@@ -15,26 +15,12 @@ R3	equ	13
 ;#include "ff.h"			/* Obtains integer types */
 ;#include "diskio.h"		/* Declarations of disk functions */
 ;#include "ata.h"
+;#include "sd.h"
 ;#include <stdio.h>
 ;
 ;/* Definitions of physical drive number for each drive */
 ;#define DEV_ATA		0	/* Example: Map ATAdisk to physical drive 0 */
-;#define DEV_MMC		1	/* Example: Map MMC/SD card to physical drive 1 */
-;
-;PARTITION VolToPart[] = {
-	data
-	xdef	~~VolToPart
-~~VolToPart:
-;	{0, 1},		/* Logical drive 0 ==> Physical drive 0, 1st partition */
-	db	$0,$1
-;	{0, 2},		/* Logical drive 1 ==> Physical drive 0, 2nd partition */
-	db	$0,$2
-;	{0, 3},		/* Logical drive 2 ==> Physical drive 0, 3nd partition */
-	db	$0,$3
-;	{0, 4}		/* Logical drive 3 ==> Physical drive 0, 4nd partition */
-	db	$0,$4
-;};
-	ends
+;#define DEV_SD		1	/* Example: Map MMC/SD card to physical drive 1 */
 ;
 ;/*-----------------------------------------------------------------------*/
 ;/* Get Drive Status                                                      */
@@ -68,9 +54,9 @@ result_1	set	1
 	lda	<L2+pdrv_0
 	and	#$ff
 	brl	L10001
-;	case DEV_ATA :
+;		case DEV_ATA :
 L10003:
-;		return ATA_disk_status(0);
+;			return ATA_disk_status(0);
 	pea	#<$0
 	jsl	~~ATA_disk_status
 	sep	#$20
@@ -93,23 +79,27 @@ L4:
 	tcs
 	tya
 	rtl
-;
-;		// translate the reslut code here
-;
-;
-;	//case DEV_MMC :
-;		//result = MMC_disk_status();
-;
-;		// translate the reslut code here
-;
-;	//	return stat;
+;		case DEV_SD :
+L10004:
+;			return sd_disk_status();
+	jsl	~~sd_disk_status
+	sep	#$20
+	longa	off
+	sta	<R0
+	rep	#$20
+	longa	on
+	lda	<R0
+	and	#$ff
+	brl	L4
 ;	}
 L10001:
 	xref	~~~swt
 	jsl	~~~swt
-	dw	1
+	dw	2
 	dw	0
 	dw	L10003-1
+	dw	1
+	dw	L10004-1
 	dw	L10002-1
 L10002:
 ;	return STA_NOINIT;
@@ -144,15 +134,15 @@ L3	equ	5
 	phd
 	tcd
 pdrv_0	set	4
-;	//printf("b");	
+;	//printf("b:%d,", pdrv);	
 ;
 ;	switch (pdrv) {
 	lda	<L5+pdrv_0
 	and	#$ff
-	brl	L10004
-;	 case 0 :
-L10006:
-;		return ATA_disk_initialize(pdrv);
+	brl	L10005
+;		case DEV_ATA :
+L10007:
+;			return ATA_disk_initialize(pdrv);
 	pei	<L5+pdrv_0
 	jsl	~~ATA_disk_initialize
 	sep	#$20
@@ -176,20 +166,29 @@ L7:
 	tya
 	rtl
 ;
-;	// case DEV_MMC :
-;	// 	//result = MMC_disk_initialize();
-;
-;	// 	// translate the reslut code here
-;	// 	return stat;
+;		case DEV_SD :
+L10008:
+;			return sd_disk_initialize();
+	jsl	~~sd_disk_initialize
+	sep	#$20
+	longa	off
+	sta	<R0
+	rep	#$20
+	longa	on
+	lda	<R0
+	and	#$ff
+	brl	L7
 ;	}
-L10004:
+L10005:
 	xref	~~~swt
 	jsl	~~~swt
-	dw	1
+	dw	2
 	dw	0
+	dw	L10007-1
+	dw	1
+	dw	L10008-1
 	dw	L10006-1
-	dw	L10005-1
-L10005:
+L10006:
 ;	return STA_NOINIT;
 	lda	#$1
 	brl	L7
@@ -233,10 +232,10 @@ count_0	set	14
 ;	switch (pdrv) {
 	lda	<L8+pdrv_0
 	and	#$ff
-	brl	L10007
-;	case DEV_ATA :
-L10009:
-;		return ATA_disk_read(0, buff, sector, count);
+	brl	L10009
+;		case DEV_ATA :
+L10011:
+;			return ATA_disk_read(0, buff, sector, count);
 	pei	<L8+count_0
 	pei	<L8+sector_0+2
 	pei	<L8+sector_0
@@ -258,22 +257,27 @@ L10:
 	tya
 	rtl
 ;
-;//	case DEV_MMC :
-;		// translate the arguments here
-;
-;//		result = MMC_disk_read(buff, sector, count);
-;
-;
-;
+;		case DEV_SD :
+L10012:
+;			return sd_disk_read(buff, sector, count);
+	pei	<L8+count_0
+	pei	<L8+sector_0+2
+	pei	<L8+sector_0
+	pei	<L8+buff_0+2
+	pei	<L8+buff_0
+	jsl	~~sd_disk_read
+	brl	L10
 ;	}
-L10007:
+L10009:
 	xref	~~~swt
 	jsl	~~~swt
-	dw	1
+	dw	2
 	dw	0
-	dw	L10009-1
-	dw	L10008-1
-L10008:
+	dw	L10011-1
+	dw	1
+	dw	L10012-1
+	dw	L10010-1
+L10010:
 ;
 ;	return RES_PARERR;
 	lda	#$4
@@ -317,15 +321,15 @@ sector_0	set	10
 count_0	set	14
 ;	
 ;
-;	//printf("c");
+;	//printf("w");
 ;
 ;	switch (pdrv) {
 	lda	<L11+pdrv_0
 	and	#$ff
-	brl	L10010
-;	case DEV_ATA :
-L10012:
-;		return ATA_disk_write(pdrv, buff, sector, count);
+	brl	L10013
+;		case DEV_ATA :
+L10015:
+;			return ATA_disk_write(pdrv, buff, sector, count);
 	pei	<L11+count_0
 	pei	<L11+sector_0+2
 	pei	<L11+sector_0
@@ -347,24 +351,27 @@ L13:
 	tya
 	rtl
 ;
-;	//case DEV_MMC :
-;		// translate the arguments here
-;
-;		//result = MMC_disk_write(buff, sector, count);
-;
-;		// translate the reslut code here
-;
-;		//return res;
-;
+;		case DEV_SD :
+L10016:
+;			return sd_disk_write(buff, sector, count);
+	pei	<L11+count_0
+	pei	<L11+sector_0+2
+	pei	<L11+sector_0
+	pei	<L11+buff_0+2
+	pei	<L11+buff_0
+	jsl	~~sd_disk_write
+	brl	L13
 ;	}
-L10010:
+L10013:
 	xref	~~~swt
 	jsl	~~~swt
-	dw	1
+	dw	2
 	dw	0
-	dw	L10012-1
-	dw	L10011-1
-L10011:
+	dw	L10015-1
+	dw	1
+	dw	L10016-1
+	dw	L10014-1
+L10014:
 ;
 ;	return RES_PARERR;
 	lda	#$4
@@ -412,20 +419,15 @@ res_1	set	0
 	stz	<L15+res_1
 	lda	<L14+pdrv_0
 	and	#$ff
-	brl	L10013
-;	case DEV_ATA :
-L10015:
-;		res = ATA_disk_ioctl(pdrv, cmd, buff);
+	brl	L10017
+;		case DEV_ATA :
+L10019:
+;			return ATA_disk_ioctl(pdrv, cmd, buff);
 	pei	<L14+buff_0+2
 	pei	<L14+buff_0
 	pei	<L14+cmd_0
 	pei	<L14+pdrv_0
 	jsl	~~ATA_disk_ioctl
-	sta	<L15+res_1
-;		// Process of the command for the ATA drive
-;
-;		return res;
-	lda	<L15+res_1
 L16:
 	tay
 	lda	<L14+2
@@ -440,21 +442,26 @@ L16:
 	tya
 	rtl
 ;
-;	//case DEV_MMC :
-;
-;		// Process of the command for the MMC/SD card
-;
-;		//return res;
+;		case DEV_SD :
+L10020:
+;			return sd_disk_ioctl(cmd, buff);
+	pei	<L14+buff_0+2
+	pei	<L14+buff_0
+	pei	<L14+cmd_0
+	jsl	~~sd_disk_ioctl
+	brl	L16
 ;
 ;	}
-L10013:
+L10017:
 	xref	~~~swt
 	jsl	~~~swt
-	dw	1
+	dw	2
 	dw	0
-	dw	L10015-1
-	dw	L10014-1
-L10014:
+	dw	L10019-1
+	dw	1
+	dw	L10020-1
+	dw	L10018-1
+L10018:
 ;
 ;	return RES_PARERR;
 	lda	#$4
@@ -466,6 +473,11 @@ L15	equ	1
 	efunc
 ;
 ;
+	xref	~~sd_disk_initialize
+	xref	~~sd_disk_write
+	xref	~~sd_disk_ioctl
+	xref	~~sd_disk_status
+	xref	~~sd_disk_read
 	xref	~~ATA_disk_ioctl
 	xref	~~ATA_disk_write
 	xref	~~ATA_disk_read

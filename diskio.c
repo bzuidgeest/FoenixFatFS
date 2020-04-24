@@ -10,18 +10,12 @@
 #include "ff.h"			/* Obtains integer types */
 #include "diskio.h"		/* Declarations of disk functions */
 #include "ata.h"
+#include "sd.h"
 #include <stdio.h>
 
 /* Definitions of physical drive number for each drive */
 #define DEV_ATA		0	/* Example: Map ATAdisk to physical drive 0 */
-#define DEV_MMC		1	/* Example: Map MMC/SD card to physical drive 1 */
-
-PARTITION VolToPart[] = {
-	{0, 1},		/* Logical drive 0 ==> Physical drive 0, 1st partition */
-	{0, 2},		/* Logical drive 1 ==> Physical drive 0, 2nd partition */
-	{0, 3},		/* Logical drive 2 ==> Physical drive 0, 3nd partition */
-	{0, 4}		/* Logical drive 3 ==> Physical drive 0, 4nd partition */
-};
+#define DEV_SD		1	/* Example: Map MMC/SD card to physical drive 1 */
 
 /*-----------------------------------------------------------------------*/
 /* Get Drive Status                                                      */
@@ -37,18 +31,10 @@ DSTATUS disk_status (
 	//printf("a");
 
 	switch (pdrv) {
-	case DEV_ATA :
-		return ATA_disk_status(0);
-
-		// translate the reslut code here
-
-
-	//case DEV_MMC :
-		//result = MMC_disk_status();
-
-		// translate the reslut code here
-
-	//	return stat;
+		case DEV_ATA :
+			return ATA_disk_status(0);
+		case DEV_SD :
+			return sd_disk_status();
 	}
 	return STA_NOINIT;
 }
@@ -63,17 +49,14 @@ DSTATUS disk_initialize (
 	BYTE pdrv				/* Physical drive nmuber to identify the drive */
 )
 {
-	//printf("b");	
+	//printf("b:%d,", pdrv);	
 
 	switch (pdrv) {
-	 case 0 :
-		return ATA_disk_initialize(pdrv);
+		case DEV_ATA :
+			return ATA_disk_initialize(pdrv);
 
-	// case DEV_MMC :
-	// 	//result = MMC_disk_initialize();
-
-	// 	// translate the reslut code here
-	// 	return stat;
+		case DEV_SD :
+			return sd_disk_initialize();
 	}
 	return STA_NOINIT;
 }
@@ -94,16 +77,11 @@ DRESULT disk_read (
 	//printf("r");
 
 	switch (pdrv) {
-	case DEV_ATA :
-		return ATA_disk_read(0, buff, sector, count);
+		case DEV_ATA :
+			return ATA_disk_read(0, buff, sector, count);
 
-//	case DEV_MMC :
-		// translate the arguments here
-
-//		result = MMC_disk_read(buff, sector, count);
-
-
-
+		case DEV_SD :
+			return sd_disk_read(buff, sector, count);
 	}
 
 	return RES_PARERR;
@@ -126,21 +104,14 @@ DRESULT disk_write (
 {
 	
 
-	//printf("c");
+	//printf("w");
 
 	switch (pdrv) {
-	case DEV_ATA :
-		return ATA_disk_write(pdrv, buff, sector, count);
+		case DEV_ATA :
+			return ATA_disk_write(pdrv, buff, sector, count);
 
-	//case DEV_MMC :
-		// translate the arguments here
-
-		//result = MMC_disk_write(buff, sector, count);
-
-		// translate the reslut code here
-
-		//return res;
-
+		case DEV_SD :
+			return sd_disk_write(buff, sector, count);
 	}
 
 	return RES_PARERR;
@@ -164,17 +135,11 @@ DRESULT disk_ioctl (
 	//printf("\nIOCTL %d", cmd);
 
 	switch (pdrv) {
-	case DEV_ATA :
-		res = ATA_disk_ioctl(pdrv, cmd, buff);
-		// Process of the command for the ATA drive
+		case DEV_ATA :
+			return ATA_disk_ioctl(pdrv, cmd, buff);
 
-		return res;
-
-	//case DEV_MMC :
-
-		// Process of the command for the MMC/SD card
-
-		//return res;
+		case DEV_SD :
+			return sd_disk_ioctl(cmd, buff);
 
 	}
 

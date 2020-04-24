@@ -119,23 +119,30 @@ void main (void)
 	VKY_TXT_CURSOR_X_REG = 0;
 	VKY_TXT_CURSOR_Y_REG = 0;
 
-	printf("\nATA test....");
+	printf("\nSD test....");
 	
-	printf("\nCreate two partitions...");
-    f_fdisk(0, plist, buff);                    /* Divide physical drive 0 */
+	// printf("\nCreate two partitions...");
+    // f_fdisk(0, plist, buff);                    /* Divide physical drive 0 */
 
-	printf("\nFormat partition 1...");
-    f_mkfs("0:", 0, buff, sizeof buff); /* Create FAT volume on the logical drive 0 */
-	printf("\nFormat partition 2...");
-    f_mkfs("1:", 0, buff, sizeof buff); /* Create FAT volume on the logical drive 1 */
+	// printf("\nFormat partition 1...");
+    // res =  f_mkfs("1:", 0, buff, sizeof buff); /* Create FAT volume on the logical drive 1 */
+	// if (res == FR_OK) printf("ok");
+	// else printf("Error: %d", res);
+	// printf("\nFormat partition 2...");
+    // f_mkfs("1:", 0, buff, sizeof buff); /* Create FAT volume on the logical drive 1 */
 
 	/* Gives a work area to the default drive */
 	printf("\nMount drive...");
-    f_mount(&fs, "", 0);
+    res = f_mount(&fs, "1:", 1);
+	if (res == FR_OK) printf("ok");
+	else printf("Error: %d", res);
 
     /* Create a file as new */
 	printf("\nCreate hello.txt...");
-    res = f_open(&fil, "hello.txt", FA_CREATE_NEW | FA_WRITE);
+    res = f_open(&fil, "1:hello.txt", FA_CREATE_NEW | FA_WRITE);
+	if (res == FR_OK) printf("ok");
+	//else if (res == FR_NOT_ENABLED) printf("Not enabled");
+	else printf("Error: %d", res);
 
     /* Write a message */
 	printf("\nWrite secret message...");
@@ -147,7 +154,7 @@ void main (void)
 
     /* Unregister work area */
 	printf("\nClose drive...");
-    f_mount(0, "", 0);
+    f_mount(0, "1:", 0);
 
  	rc = 0;
 	while(1)
