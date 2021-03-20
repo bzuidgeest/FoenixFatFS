@@ -70,7 +70,7 @@ void BRKHandler(void)
 }
 
 
-DWORD buff[FF_MAX_SS];  /* Working buffer (4 sector in size) */
+BYTE buff[FF_MAX_SS];  /* Working buffer (4 sector in size) */
 FATFS fs;           /* Filesystem object */
 FIL fil;            /* File object */
 FRESULT res;        /* API result code */
@@ -85,6 +85,7 @@ void main (void)
     
 	LBA_t plist[] = {50, 50, 0};  /* Divide the drive into two partitions */
 
+	UINT bytecount = 0;
 	
 
 	// Emulator workarround for screen
@@ -137,18 +138,40 @@ void main (void)
 	if (res == FR_OK) printf("ok");
 	else printf("Error: %d", res);
 
-    /* Create a file as new */
-	printf("\nCreate hello.txt...");
-    res = f_open(&fil, "1:hello.txt", FA_CREATE_NEW | FA_WRITE);
+    // /* Create a file as new */
+	// printf("\nCreate hello.txt...");
+    // res = f_open(&fil, "1:hello.txt", FA_CREATE_NEW | FA_WRITE);
+	// if (res == FR_OK) printf("ok");
+	// //else if (res == FR_NOT_ENABLED) printf("Not enabled");
+	// else printf("Error: %d", res);
+
+    // /* Write a message */
+	// printf("\nWrite secret message...");
+    // f_write(&fil, "Hello, Foenix!\r\n", 15, &bw);
+
+    // /* Close the file */
+	// printf("\nClose file...");
+    // f_close(&fil);
+
+	 /* Create a file as new */
+	printf("\nOpen ZORK1.DAT...");
+    res = f_open(&fil, "1:ZORK1.DAT", FA_READ);
 	if (res == FR_OK) printf("ok");
-	//else if (res == FR_NOT_ENABLED) printf("Not enabled");
 	else printf("Error: %d", res);
 
-    /* Write a message */
-	printf("\nWrite secret message...");
-    f_write(&fil, "Hello, Foenix!\r\n", 15, &bw);
+	f_read(&fil, buff, 11, &bytecount);
+	if (res == FR_OK)
+	{ 
+		printf("\nread %d ok", bytecount);
+		bytecount = 10;
+		while (bytecount-- > 0)
+		{
+			printf("\n0x%2x", buff[bytecount]);
+		}
+	}
+	else printf("\nError reading: %d", res);
 
-    /* Close the file */
+	/* Close the file */
 	printf("\nClose file...");
     f_close(&fil);
 
